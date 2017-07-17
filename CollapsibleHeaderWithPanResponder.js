@@ -93,7 +93,6 @@ export default class CollapsibleHeader extends Component {
             data={this.props.data}
             renderItem={this.props.renderItem}
             scrollEventThrottle={16}
-            onScrollEndDrag={this.onScrollEndDrag}
             {...this.props}
             {...this.scollerPanResponder.panHandlers}
           />
