@@ -14,10 +14,14 @@ export default class CollapsibleHeader extends Component {
     headerColor: PropTypes.any,
     renderItem: PropTypes.any,
     headerHeight: PropTypes.any.isRequired,
-    data: PropTypes.any
+    data: PropTypes.any,
+    ramsayContent: PropTypes.bool
   }
-  scroll = new Animated.Value(0);
 
+
+
+  scroll = new Animated.Value(0)
+  scrollValue = 0
 
   position = this.scroll.interpolate({
     inputRange: [-(this.props.headerHeight), 0, this.props.headerHeight],
@@ -34,11 +38,24 @@ export default class CollapsibleHeader extends Component {
     this.scroll.removeAllListeners()
   }
 
+  checkMoving = ({ dy }) => {
+    const draggedDown = dy > 3
+    const draggedUp = dy < -3
+
+    if (draggedDown || draggedUp) {
+      return true
+    } else {
+      return false
+    }
+  }
+
   componentWillMount() {
     this._animatedValueY = 0
     this.scroll.addListener((value) => {
+      this.scrollValue = value.value - this._animatedValueY // get the raw value with no offset
       if (value.value < 0) {
         if (value.value < -Math.abs(this.props.headerHeight)) {
+          // capped this to the header height (negative)
           this._animatedValueY = -Math.abs(this.props.headerHeight)
         } else {
           this._animatedValueY = Math.ceil(value.value)
@@ -50,18 +67,30 @@ export default class CollapsibleHeader extends Component {
         } else {
           this._animatedValueY = Math.ceil(value.value)
         }
+        this.scroll.flattenOffset()
       }
     })
     this.scollerPanResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (evt, gestureState) => true,  //eslint-disable-line 
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => !!this.checkMoving(gestureState),
       onPanResponderGrant: (e, gestureState) => { //eslint-disable-line 
         this.scroll.setOffset(this._animatedValueY)
         this.scroll.setValue(0) //Initial value
       },
       onPanResponderMove: Animated.event([
         null, { dy: this.scroll }
-      ])
+      ]),
+      onPanResponderRelease: () => { 
+        const toValue = this.scrollValue + this._animatedValueY > (this.props.headerHeight / 2)
+          || this._animatedValueY >= 0
+          ? 0 + this.props.headerHeight
+          : 0 - this.props.headerHeight
+
+        Animated.timing(this.scroll, {
+          toValue,
+          duration: 250,
+          useNativeDriver: true
+        }).start()
+      }
     })
   }
 
@@ -89,7 +118,7 @@ export default class CollapsibleHeader extends Component {
             }
           ]}>
           <FlatList
-            contentContainerStyle={{ paddingTop: 10, paddingBottom: this.props.headerHeight }}
+            contentContainerStyle={[{paddingBottom: this.props.headerHeight}]}
             data={this.props.data}
             renderItem={this.props.renderItem}
             scrollEventThrottle={16}

@@ -10,9 +10,11 @@ import {
   StyleSheet,
   Text,
   View,
-  Image
+  Image,
+  StatusBar
 } from 'react-native';
-import CollapsibleHeader from './CollapsibleHeader'
+import CollapsibleHeader from './CollapsibleHeaderWithPanResponder'
+import TabHeader from './TabHeader'
 
 
 const data = [
@@ -267,25 +269,34 @@ const data = [
 
 export default class Sample extends Component {
 
+  state = {
+    value: ''
+  }
 
   _renderHeader = () => (
-    <View style={styles.headerBox}>
-      <Text style={{ paddingTop: 10, fontSize: 20 }}>This is header</Text>
-    </View>
-  )
 
-  _renderRemainHeader = () => (
-    <View style={styles.remainder}>
-      <Text style={{ paddingTop: 10, fontSize: 20 }}>This is remainder</Text>
-    </View>
+    <TabHeader
+      placeholder='Search......'
+      onChangeText={() => console.log("hello")}
+      onClearSearch={() => console.log("onsearch")}
+      value={this.state.value}
+      leftLabel='LEFT TAB'
+      onPressLeft={this.goLeft}
+      rightLabel='RIGHT TAB'
+      onPressRight={this.goRigth}
+      leftSelected={true}
+      rightSelected={false}
+      contentType='benefit'
+      minimized={false}
+    />
   )
 
   renderItem = (data) => {
     let item = data.item
     return (
       <View style={styles.item}>
-        <View style={{flex:1}}>
-          <Image source={{ uri: item.picture }} style={{ height: 400, width:250 }} />
+        <View style={{ flex: 1 }}>
+          <Image source={{ uri: item.picture }} style={{ height: 400, width: 250 }} />
         </View>
         <View>
           <Text>{item.name}</Text>
@@ -303,13 +314,14 @@ export default class Sample extends Component {
   render() {
     return (
       <View style={styles.container}>
+        <StatusBar
+          backgroundColor="blue"
+          barStyle="dark-content"
+        />
         <CollapsibleHeader
-          renderHeader={this._renderHeader}
+          renderHeader={this._renderHeader()}
           headerColor={'#F25C5A'}
-          headerHeight={90}
-          renderRemainHeader={this._renderRemainHeader}
-          remainHeaderHeight={40}
-          remainHeaderColor={'#C2DE5A'}
+          headerHeight={110}
           data={data}
           renderItem={this.renderItem}
           keyExtractor={this.keyExtractor}
