@@ -62,12 +62,7 @@ export default class CollapsibleHeader extends Component {
         }
       }
       if (value.value > 0) {
-        if (value.value > this.props.headerHeight) {
-          this._animatedValueY = this.props.headerHeight
-        } else {
-          this._animatedValueY = Math.ceil(value.value)
-        }
-        this.scroll.flattenOffset()
+        this._animatedValueY = 0
       }
     })
     this.scollerPanResponder = PanResponder.create({
@@ -80,11 +75,8 @@ export default class CollapsibleHeader extends Component {
         null, { dy: this.scroll }
       ]),
       onPanResponderRelease: () => { 
-        const toValue = this.scrollValue + this._animatedValueY > (this.props.headerHeight / 2)
-          || this._animatedValueY >= 0
-          ? 0 + this.props.headerHeight
-          : 0 - this.props.headerHeight
-
+        let toValue = this.scroll._value > (this.props.headerHeight /2) ? 0 + this.props.headerHeight : 0 - this.props.headerHeight
+        this.scroll.flattenOffset()
         Animated.timing(this.scroll, {
           toValue,
           duration: 250,
@@ -118,7 +110,7 @@ export default class CollapsibleHeader extends Component {
             }
           ]}>
           <FlatList
-            contentContainerStyle={[{paddingBottom: this.props.headerHeight}]}
+            contentContainerStyle={[{paddingBottom: this.props.headerHeight}, this.props.ramsayContent !== true && {paddingTop: 15}]}
             data={this.props.data}
             renderItem={this.props.renderItem}
             scrollEventThrottle={16}
